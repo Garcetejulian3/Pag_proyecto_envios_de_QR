@@ -41,3 +41,31 @@ async function consumirApi(event) {
         alert("Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.");
     }
 }
+
+
+function onScanSuccess(decodedText, decodedResult) {
+
+    console.log("QR detectado:", decodedText);
+
+    // Mandamos el resultado a Spring Boot
+    fetch("https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/validar", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ codigo: decodedText })
+    })
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById("resultado").innerText = data;
+    })
+    .catch(error => console.error(error));
+}
+
+let html5QrcodeScanner = new Html5QrcodeScanner(
+    "reader",
+    { fps: 10, qrbox: 250 },
+    false
+);
+
+html5QrcodeScanner.render(onScanSuccess);
