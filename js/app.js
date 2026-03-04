@@ -1,3 +1,7 @@
+// =============================
+// FORMULARIO ENVÍO EMAIL
+// =============================
+
 const form = document.getElementById("formId");
 
 form.addEventListener("submit", consumirApi);
@@ -8,8 +12,8 @@ async function consumirApi(event) {
     const mensajeId = document.getElementById("mensajeId").value;
     const emailId = document.getElementById("emailId").value;
     const codigoId = document.getElementById("codigoId").value;
-    
-    if(!mensajeId || !emailId || !codigoId) {
+
+    if (!mensajeId || !emailId || !codigoId) {
         alert("Por favor, completa todos los campos.");
         return;
     }
@@ -19,7 +23,7 @@ async function consumirApi(event) {
         email: emailId,
         codigo: codigoId
     };
-    
+
     try {
         const response = await fetch("https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/send/qr", {
             method: "POST",
@@ -29,7 +33,7 @@ async function consumirApi(event) {
             body: JSON.stringify(correo)
         });
 
-    if (!response.ok) {
+        if (!response.ok) {
             throw new Error("Error en backend");
         }
 
@@ -37,17 +41,45 @@ async function consumirApi(event) {
         console.log("Respuesta del backend:", data);
         alert("¡Mensaje enviado con éxito!");
     } catch (error) {
-        console.error("Error al enviar el mensaje:", error);
-        alert("Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.");
+        console.error("Error:", error);
+        alert("Hubo un error al enviar el mensaje.");
     }
 }
 
 
+// =============================
+// ESCANER QR
+// =============================
+
+let html5QrcodeScanner = null;
+
+// Iniciar escaneo
+document.getElementById("startScanBtn").addEventListener("click", function () {
+
+    if (!html5QrcodeScanner) {
+
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 10, qrbox: 250 },
+            false
+        );
+
+        html5QrcodeScanner.render(onScanSuccess);
+    }
+});
+
+// Detener escaneo manual
+document.getElementById("stopScanBtn").addEventListener("click", function () {
+    detenerEscaneo();
+});
+
+// Función éxito escaneo
 function onScanSuccess(decodedText, decodedResult) {
 
     console.log("QR detectado:", decodedText);
 
-    // Mandamos el resultado a Spring Boot
+    detenerEscaneo();
+
     fetch("https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/validar", {
         method: "POST",
         headers: {
@@ -62,10 +94,10 @@ function onScanSuccess(decodedText, decodedResult) {
     .catch(error => console.error(error));
 }
 
-let html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader",
-    { fps: 10, qrbox: 250 },
-    false
-);
-
-html5QrcodeScanner.render(onScanSuccess);
+// Función reutilizable para detener
+function detenerEscaneo() {
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+        html5QrcodeScanner = null;
+    }
+}
