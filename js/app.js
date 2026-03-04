@@ -48,56 +48,79 @@ async function consumirApi(event) {
 
 
 // =============================
-// ESCANER QR
+// ESCANER QR (VERSIÓN PRO)
 // =============================
 
-let html5QrcodeScanner = null;
+let html5QrCode = null;
 
-// Iniciar escaneo
-document.getElementById("startScanBtn").addEventListener("click", function () {
+// INICIAR ESCANEO
+document.getElementById("startScanBtn").addEventListener("click", async function () {
 
-    if (!html5QrcodeScanner) {
+    if (!html5QrCode) {
 
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: 250 },
-            false
-        );
+        html5QrCode = new Html5Qrcode("reader");
 
-        html5QrcodeScanner.render(onScanSuccess);
+        try {
+            const cameras = await Html5Qrcode.getCameras();
+
+            if (cameras && cameras.length) {
+
+                await html5QrCode.start(
+                    cameras[0].id,
+                    {
+                        fps: 10,
+                        qrbox: 250
+                    },
+                    async (decodedText) => {
+
+                        console.log("QR detectado:", decodedText);
+
+                        await html5QrCode.stop();
+                        html5QrCode = null;
+
+                        validarCodigo(decodedText);
+                    }
+                );
+            }
+        } catch (err) {
+            console.error("Error al iniciar cámara:", err);
+        }
     }
 });
 
-// Detener escaneo manual
-document.getElementById("stopScanBtn").addEventListener("click", function () {
-    detenerEscaneo();
+
+// DETENER ESCANEO
+document.getElementById("stopScanBtn").addEventListener("click", async function () {
+    if (html5QrCode) {
+        await html5QrCode.stop();
+        html5QrCode = null;
+    }
 });
 
-// Función éxito escaneo
-function onScanSuccess(decodedText, decodedResult) {
 
-    console.log("QR detectado:", decodedText);
+// =============================
+// VALIDAR CON BACKEND
+// =============================
 
-    detenerEscaneo();
+function validarCodigo(codigo) {
 
     fetch("https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/validar", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ codigo: decodedText })
+        body: JSON.stringify({ codigo: codigo })
     })
     .then(response => response.text())
     .then(data => {
-        document.getElementById("resultado").innerText = data;
+        document.getElementById("resultado").innerHTML = `
+            <strong>Código escaneado:</strong> ${codigo} <br>
+            <strong>Respuesta servidor:</strong> ${data}
+        `;
     })
-    .catch(error => console.error(error));
-}
-
-// Función reutilizable para detener
-function detenerEscaneo() {
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
-        html5QrcodeScanner = null;
-    }
+    .catch(error => {
+        console.error(error);
+        document.getElementById("resultado").innerText =
+            "Error al validar el código";
+    });
 }
