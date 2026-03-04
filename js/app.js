@@ -51,70 +51,63 @@ async function consumirApi(event) {
 // ESCANER QR (VERSIÓN PRO)
 // =============================
 
-let html5QrCode = null;
+let html5QrCode = new Html5Qrcode("reader");
+let isScanning = false;
 
+
+// =============================
 // INICIAR ESCANEO
-document.getElementById("startScanBtn").addEventListener("click", async function () {
+// =============================
+document.getElementById("startScanBtn").addEventListener("click", async () => {
 
-    if (!html5QrCode) {
+    if (isScanning) return;
 
-        html5QrCode = new Html5Qrcode("reader");
+    try {
+        const cameras = await Html5Qrcode.getCameras();
 
-        try {
-            const cameras = await Html5Qrcode.getCameras();
-
-            if (cameras && cameras.length) {
-
-                await html5QrCode.start(
-                    cameras[0].id,
-                    {
-                        fps: 10,
-                        qrbox: 250
-                    },
-                    async (decodedText) => {
-
-                        console.log("QR detectado:", decodedText);
-
-                        await html5QrCode.stop();
-                        html5QrCode = null;
-
-                        validarCodigo(decodedText);
-                    }
-                );
-            }
-        } catch (err) {
-            console.error("Error al iniciar cámara:", err);
+        if (!cameras.length) {
+            alert("No se detectaron cámaras");
+            return;
         }
+
+        await html5QrCode.start(
+            cameras[0].id,
+            { fps: 10, qrbox: 250 },
+            async (decodedText) => {
+
+                console.log("QR detectado:", decodedText);
+
+                await detenerEscaneo();
+                validarCodigo(decodedText);
+            }
+        );
+
+        isScanning = true;
+
+    } catch (err) {
+        console.error("Error al iniciar:", err);
     }
 });
 
 
+// =============================
 // DETENER ESCANEO
-document.getElementById("stopScanBtn").addEventListener("click", async function () {
+// =============================
+document.getElementById("stopScanBtn").addEventListener("click", detenerEscaneo);
 
-    if (html5QrCode) {
+async function detenerEscaneo() {
 
-        try {
+    if (!isScanning) return;
 
-            const state = html5QrCode.getState();
-
-            if (state === Html5QrcodeScannerState.SCANNING ||
-                state === Html5QrcodeScannerState.PAUSED) {
-
-                await html5QrCode.stop();
-                await html5QrCode.clear();
-                html5QrCode = null;
-
-                document.getElementById("resultado").innerText =
-                    "Escaneo detenido";
-
-            }
-
-        } catch (err) {
-            console.error("Error al detener:", err);
-        }
+    try {
+        await html5QrCode.stop();
+        await html5QrCode.clear();
+        isScanning = false;
+        console.log("Escaneo detenido correctamente");
+    } catch (err) {
+        console.error("Error al detener:", err);
     }
-});
+}
 
 
 // =============================
