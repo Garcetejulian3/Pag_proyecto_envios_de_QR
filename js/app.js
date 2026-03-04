@@ -91,9 +91,28 @@ document.getElementById("startScanBtn").addEventListener("click", async function
 
 // DETENER ESCANEO
 document.getElementById("stopScanBtn").addEventListener("click", async function () {
+
     if (html5QrCode) {
-        await html5QrCode.stop();
-        html5QrCode = null;
+
+        try {
+
+            const state = html5QrCode.getState();
+
+            if (state === Html5QrcodeScannerState.SCANNING ||
+                state === Html5QrcodeScannerState.PAUSED) {
+
+                await html5QrCode.stop();
+                await html5QrCode.clear();
+                html5QrCode = null;
+
+                document.getElementById("resultado").innerText =
+                    "Escaneo detenido";
+
+            }
+
+        } catch (err) {
+            console.error("Error al detener:", err);
+        }
     }
 });
 
