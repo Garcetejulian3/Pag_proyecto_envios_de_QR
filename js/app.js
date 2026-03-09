@@ -70,8 +70,18 @@ document.getElementById("startScanBtn").addEventListener("click", async () => {
             return;
         }
 
+        let cameraId = cameras[0].id;
+
+        for (const camera of cameras) {
+            if (camera.label.toLowerCase().includes("back") ||
+                camera.label.toLowerCase().includes("rear")) {
+                cameraId = camera.id;
+                break;
+            }
+        }
+
         await html5QrCode.start(
-            cameras[0].id,
+            cameraId,
             { fps: 10, qrbox: 250 },
             async (decodedText) => {
 
@@ -123,16 +133,52 @@ function validarCodigo(codigo) {
         },
         body: JSON.stringify({ codigo: codigo })
     })
-    .then(response => response.text())
-    .then(data => {
-        document.getElementById("resultado").innerHTML = `
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("resultado").innerHTML = `
             <strong>Código escaneado:</strong> ${codigo} <br>
             <strong>Respuesta servidor:</strong> ${data}
         `;
-    })
-    .catch(error => {
-        console.error(error);
-        document.getElementById("resultado").innerText =
-            "Error al validar el código";
-    });
+        })
+        .catch(error => {
+            console.error(error);
+            document.getElementById("resultado").innerText =
+                "Error al validar el código";
+        });
 }
+
+// =============================
+// ESCANEAR DESDE GALERÍA
+// =============================
+
+document.getElementById("scanFileBtn").addEventListener("click", () => {
+    document.getElementById("qrFileInput").click();
+});
+
+document.getElementById("qrFileInput").addEventListener("change", async (event) => {
+
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+
+        // Si la cámara está abierta la cerramos
+        if (isScanning) {
+            await detenerEscaneo();
+        }
+
+        const decodedText = await html5QrCode.scanFile(file, true);
+
+        console.log("QR detectado:", decodedText);
+
+        validarCodigo(decodedText);
+
+    } catch (err) {
+
+        console.error("No se detectó QR en la imagen", err);
+
+        document.getElementById("resultado").innerText =
+            "No se detectó ningún QR en la imagen.";
+    }
+
+});
