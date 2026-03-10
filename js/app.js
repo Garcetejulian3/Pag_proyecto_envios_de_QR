@@ -188,7 +188,7 @@ document.getElementById("qrFileInput").addEventListener("change", async (event) 
 // MOSTAR QR GENERADO
 // =============================
 
-document.getElementById("generarQRBtn").addEventListener("click", async (event) => {
+document.getElementById("generarQRBtn").addEventListener("click", function (event) {
 
     event.preventDefault();
 
@@ -199,26 +199,13 @@ document.getElementById("generarQRBtn").addEventListener("click", async (event) 
         return;
     }
 
-    const url = `https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/qr?codigo=${encodeURIComponent(codigo)}`;
+    const img = document.getElementById("qrImagen");
 
-    try {
+    const url = "https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/qr?codigo=" + encodeURIComponent(codigo);
 
-        const response = await fetch(url);
+    console.log("URL QR:", url);
 
-        if (!response.ok) {
-            throw new Error("Error al obtener QR");
-        }
-
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-
-        const img = document.getElementById("qrImagen");
-        img.src = imageUrl;
-
-    } catch (error) {
-        console.error(error);
-        alert("Error generando QR");
-    }
+    img.src = url;
 
 });
 
