@@ -182,3 +182,33 @@ document.getElementById("qrFileInput").addEventListener("change", async (event) 
     }
 
 });
+
+// =============================
+// MOSTAR QR GENERADO
+// =============================
+
+document.getElementById("generarQRBtn").addEventListener("click", async () => {
+
+    const codigo = document.getElementById("codigoIdImg").value;
+
+    if (!codigo) {
+        alert("Ingresa un código");
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/qr?codigo=${encodeURIComponent(codigo)}`
+        );
+
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+
+        document.getElementById("qrImagen").src = imageUrl;
+
+    } catch (error) {
+        console.error(error);
+        alert("Error generando el QR");
+    }
+});
