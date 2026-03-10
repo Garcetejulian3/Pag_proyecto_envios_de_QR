@@ -199,13 +199,15 @@ document.getElementById("generarQRBtn").addEventListener("click", function (even
         return;
     }
 
-    const img = document.getElementById("qrImagen");
-
     const url = "https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/qr?codigo=" + encodeURIComponent(codigo);
 
-    console.log("URL QR:", url);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "qr_codigo.png";
 
-    img.src = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
 });
 
