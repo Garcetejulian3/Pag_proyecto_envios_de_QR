@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 // =============================
 // FORMULARIO ENVÍO EMAIL
 // =============================
@@ -162,7 +164,6 @@ document.getElementById("qrFileInput").addEventListener("change", async (event) 
 
     try {
 
-        // Si la cámara está abierta la cerramos
         if (isScanning) {
             await detenerEscaneo();
         }
@@ -187,28 +188,22 @@ document.getElementById("qrFileInput").addEventListener("change", async (event) 
 // MOSTAR QR GENERADO
 // =============================
 
-document.getElementById("generarQRBtn").addEventListener("click", async () => {
+document.getElementById("generarQRBtn").addEventListener("click", (event) => {
+
+    event.preventDefault();
 
     const codigo = document.getElementById("codigoIdImg").value;
 
-    if (!codigo) {
-        alert("Ingresa un código");
-        return;
-    }
+    console.log("codigo:", codigo);
 
-    try {
+    const url = `https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/qr?codigo=${encodeURIComponent(codigo)}`;
 
-        const response = await fetch(
-            `https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/qr?codigo=${encodeURIComponent(codigo)}`
-        );
+    console.log("url:", url);
 
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
+    const img = document.getElementById("qrImagen");
 
-        document.getElementById("qrImagen").src = imageUrl;
+    img.src = url;
 
-    } catch (error) {
-        console.error(error);
-        alert("Error generando el QR");
-    }
+});
+
 });
