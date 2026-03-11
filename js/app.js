@@ -27,7 +27,7 @@ async function consumirApi(event) {
     };
 
     try {
-        const response = await fetch("https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/send/qr", {
+        const response = await fetch("https://ejemplo-email-envios-qr.onrender.com/api/send/qr", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -128,7 +128,7 @@ async function detenerEscaneo() {
 
 function validarCodigo(codigo) {
 
-    fetch("https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/validar", {
+    fetch("https://ejemplo-email-envios-qr.onrender.com/api/validar", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -199,7 +199,7 @@ document.getElementById("generarQRBtn").addEventListener("click", function (even
         return;
     }
 
-    const url = "https://nonmodal-abandonable-vanesa.ngrok-free.dev/api/qr?codigo=" + encodeURIComponent(codigo);
+    const url = "https://ejemplo-email-envios-qr.onrender.com/api/qr?codigo=" + encodeURIComponent(codigo);
 
     const link = document.createElement("a");
     link.href = url;
